@@ -84,6 +84,11 @@ for L in "${LENGTHS[@]}"; do
     n="${NTAB[$L]:-0}"
     for ((id=0; id<n; id++)); do
         f="$OUT/t${L}_${id}.rtbl"
+        rm -f "$f.tmp"                      # drop any leftover partial write
+        if [ -s "$f" ]; then
+            echo ">> length $L, table $id already done ($f) -- skipping"
+            continue                        # RESUME: re-running continues where it stopped
+        fi
         echo "=============================================================="
         echo " length $L, table $id  ->  $f"
         echo "=============================================================="

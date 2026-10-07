@@ -86,6 +86,21 @@ effort (see **Tuning** below).
 > of L6 + L7); reaching 50 % requires the hashes to be skewed toward short
 > passwords, where `--fast` already shines.
 
+**If the machine is interrupted** (reboot, power loss, closed session): just run
+the *same* `build-tables.sh` command again. Each table is written atomically
+(via a temporary file renamed on completion), so a finished `.rtbl` is never
+corrupt, and the script **skips tables that are already done** and resumes with
+the ones still missing. Only the single table that was in progress at the moment
+of the interruption is lost and regenerated. (Plain *sleep*/suspend just pauses
+the run; it resumes on wake.) Tip: keep the laptop plugged in and disable
+automatic sleep for the night, and you can launch it detached so closing the
+terminal doesn't stop it:
+
+```bash
+nohup ./build-tables.sh --fast tables > build.log 2>&1 &
+tail -f build.log          # watch progress; Ctrl-C just stops watching
+```
+
 You can also build a single table by hand:
 
 ```bash

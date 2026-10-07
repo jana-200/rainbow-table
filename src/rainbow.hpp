@@ -35,6 +35,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -230,24 +231,44 @@ inline void write_table(const std::string& path, uint32_t length,
                              { return a.end == b.end; }),
                  chains.end());
 
-    std::ofstream out(path, std::ios::binary);
-    if (!out)
-        throw std::runtime_error("cannot open table file for writing: " + path);
+    // Write to a temporary file first, then atomically rename it into place.
+    // This way a final table file only ever appears once it is complete: a
+    // crash / power loss mid-write leaves a .tmp behind, never a truncated
+    // .rtbl that would be mistaken for a finished table on resume.
+    const std::string tmp = path + ".tmp";
 
-    TableHeader h;
-    std::memcpy(h.magic, TABLE_MAGIC, 4);
-    h.version  = TABLE_VERSION;
-    h.length   = length;
-    h.table_id = table_id;
-    h.t        = t;
-    h.N        = N;
-    h.count    = chains.size();
+    {
+        std::ofstream out(tmp, std::ios::binary | std::ios::trunc);
+        if (!out)
+            throw std::runtime_error("cannot open table file for writing: " + tmp);
 
-    out.write(reinterpret_cast<const char*>(&h), sizeof(h));
-    out.write(reinterpret_cast<const char*>(chains.data()),
-              std::streamsize(chains.size() * sizeof(Chain)));
-    if (!out)
-        throw std::runtime_error("error while writing table file: " + path);
+        TableHeader h;
+        std::memcpy(h.magic, TABLE_MAGIC, 4);
+        h.version  = TABLE_VERSION;
+        h.length   = length;
+        h.table_id = table_id;
+        h.t        = t;
+        h.N        = N;
+        h.count    = chains.size();
+
+        out.write(reinterpret_cast<const char*>(&h), sizeof(h));
+        out.write(reinterpret_cast<const char*>(chains.data()),
+                  std::streamsize(chains.size() * sizeof(Chain)));
+        out.flush();
+        if (!out)
+        {
+            out.close();
+            std::remove(tmp.c_str());
+            throw std::runtime_error("error while writing table file: " + tmp);
+        }
+    } // ofstream closed here
+
+    std::remove(path.c_str());               // in case a stale file is present
+    if (std::rename(tmp.c_str(), path.c_str()) != 0)
+    {
+        std::remove(tmp.c_str());
+        throw std::runtime_error("cannot finalize table file: " + path);
+    }
 }
 
 inline Table load_table(const std::string& path)
