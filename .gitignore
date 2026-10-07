@@ -1,0 +1,9 @@
+# built binaries
+/gen-table
+/attack
+/gen-passwd
+/check-passwd
+# generated rainbow tables and test artifacts
+/tables/
+*.rtbl
+*.o
