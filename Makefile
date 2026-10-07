@@ -21,10 +21,10 @@ SHA_OBJ  := $(SRC)/sha256.cpp
 
 all: gen-table attack tools
 
-gen-table: $(SRC)/gen-table.cpp $(SRC)/rainbow.hpp $(SRC)/sha256.h $(SRC)/staticstring.hpp $(SRC)/misc/threadpool.hpp $(SHA_OBJ)
+gen-table: $(SRC)/gen-table.cpp $(SRC)/rainbow.hpp $(SRC)/sha256_fast.hpp $(SRC)/sha256.h $(SRC)/staticstring.hpp $(SRC)/misc/threadpool.hpp $(SHA_OBJ)
 	$(CXX) $(CXXFLAGS) -I$(SRC) -o $@ $(SRC)/gen-table.cpp $(SHA_OBJ)
 
-attack: $(SRC)/attack.cpp $(SRC)/rainbow.hpp $(SRC)/sha256.h $(SRC)/staticstring.hpp $(SRC)/misc/threadpool.hpp $(SHA_OBJ)
+attack: $(SRC)/attack.cpp $(SRC)/rainbow.hpp $(SRC)/sha256_fast.hpp $(SRC)/sha256.h $(SRC)/staticstring.hpp $(SRC)/misc/threadpool.hpp $(SHA_OBJ)
 	$(CXX) $(CXXFLAGS) -I$(SRC) -o $@ $(SRC)/attack.cpp $(SHA_OBJ)
 
 tools: gen-passwd check-passwd

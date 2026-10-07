@@ -42,6 +42,7 @@
 #include <algorithm>
 
 #include "sha256.h"
+#include "sha256_fast.hpp"
 
 namespace rainbow {
 
@@ -114,12 +115,10 @@ inline uint64_t password_to_index(const char* pwd, int length)
 
 inline void sha256_raw(const char* data, size_t len, uint8_t digest[SHA256::HashBytes])
 {
-    // A per-thread SHA256 object avoids re-allocating state and makes the hot
-    // loops thread-safe when used from the thread pool.
-    thread_local SHA256 sha;
-    sha.reset();
-    sha.add(data, len);
-    sha.getHash(digest);
+    // Uses the hardware-accelerated SHA extensions when available and verified
+    // (see sha256_fast.hpp); otherwise the scalar reference. Our passwords are
+    // 6..10 bytes, so the fast single-block path is always taken on modern x86.
+    sha256_short(data, len, digest);
 }
 
 // ---------------------------------------------------------------------------

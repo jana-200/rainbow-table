@@ -63,6 +63,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    std::cerr << "  SHA-256   : "
+              << (rainbow::shani_enabled() ? "hardware-accelerated (SHA extensions)"
+                                           : "scalar (no SHA extensions on this CPU)")
+              << '\n';
+
     const uint64_t N = keyspace(L);
 
     // Starting points are the sequential indices 0..m-1: they are distinct and

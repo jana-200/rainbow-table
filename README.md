@@ -58,14 +58,33 @@ then run `make` from the g++ shell — the code only uses the standard library,
 
 ### 1. Preprocessing — build the rainbow tables (do this once)
 
+First, measure your machine's SHA-256 throughput (one minute):
+
 ```bash
-./build-tables.sh tables
+./build-tables.sh --bench
 ```
 
-This writes `tables/t<L>_<id>.rtbl`. With the default parameters it targets
-roughly one night on a multi-core laptop and stays well under the 20 GB disk /
-6 GB RAM limits. Edit the `M`, `T`, `NTAB` arrays at the top of
-`build-tables.sh` to spend more or less effort (see **Tuning** below).
+It also tells you whether the **hardware-accelerated** SHA-256 is active
+(see *Performance* below). Then build the tables with a profile:
+
+```bash
+./build-tables.sh --fast tables     # lengths 6 + 7  (best real crack rate, ~1 night)
+./build-tables.sh --full tables     # + length 8     (mostly symbolic)
+./build-tables.sh --max  tables     # + lengths 9,10 (covers the whole 6..10 range)
+```
+
+This writes `tables/t<L>_<id>.rtbl`. The profiles target roughly one night on a
+multi-core laptop and stay well under the 20 GB disk / 6 GB RAM limits. Edit the
+`M`, `T`, `NTAB` arrays at the top of `build-tables.sh` to spend more or less
+effort (see **Tuning** below).
+
+> **Which profile?** `--fast` is almost always the best choice for the crack
+> rate. Lengths 8–10 have key spaces so large (62⁸ ≈ 2·10¹⁴ … 62¹⁰ ≈ 8·10¹⁷)
+> that a laptop cannot cover them in one night, so `--full`/`--max` crack almost
+> nothing extra while stealing time from lengths 6–7. On a test set with
+> *uniform* lengths 6–10 the theoretical ceiling for any laptop is ≈ 40 % (all
+> of L6 + L7); reaching 50 % requires the hashes to be skewed toward short
+> passwords, where `--fast` already shines.
 
 You can also build a single table by hand:
 
@@ -118,6 +137,20 @@ paste pw.txt cracked.txt                    # compare (ignoring '?')
   the attack processes each hash on a worker thread. Both scale with cores
   (the statement notes multithreading is essentially required).
 
+## Performance (SHA-256 acceleration)
+
+SHA-256 is where essentially all the time goes, so `src/sha256_fast.hpp`
+provides a hardware-accelerated single-block SHA-256 using the x86 **SHA
+extensions** (Intel SHA-NI, all AMD Zen, recent Intel). Our messages are
+6–10 bytes (one block), which is the ideal case for it, giving roughly a
+5–8× speedup over the scalar reference.
+
+It is enabled only when the CPU advertises the extensions **and** a one-time
+self-test confirms it reproduces the reference SHA-256 bit-for-bit; otherwise
+the code transparently falls back to the scalar implementation. **The result is
+always correct — at worst slower, never wrong.** `gen-table` and `attack` print
+which backend is in use at startup (`hardware-accelerated` vs `scalar`).
+
 ## Tuning (coverage vs. time)
 
 Per table the cost is about `m · t` SHA-256 evaluations and `m · 16` bytes of
@@ -143,9 +176,15 @@ the success rate up:
 * increase `m` (more chains → more coverage, more disk/RAM), or
 * increase `t` (longer chains → more coverage per byte, but slower look-up).
 
-Measured throughput on a 4-core cloud VM was ≈ 12–13 million SHA-256/s; a
-typical 8-core laptop does more, so the overnight budget is on the order of
-10¹² evaluations — enough to cover length 6 strongly and length 7 partially.
+Measured throughput of the *scalar* path on a 4-core cloud VM was ≈ 12–13
+million SHA-256/s. With the SHA-extension path on a typical 8-core laptop the
+overnight budget is on the order of 10¹²–10¹³ evaluations — enough to cover
+length 6 strongly and length 7 well. Run `./build-tables.sh --bench` to get your
+own number and size the tables accordingly.
+
+Open-source library note: the SHA extensions implementation in
+`sha256_fast.hpp` is the public-domain (CC0) Intel SHA-extensions routine by
+Jeffrey Walton.
 
 ## Repository layout
 
@@ -158,7 +197,8 @@ src/
   rainbow.hpp         core: indexing, reduction, chains, table I/O, look-up
   gen-table.cpp       preprocessing program
   attack.cpp          attack program
-  sha256.{h,cpp}      SHA-256 (open source, Stephan Brumme — see headers)
+  sha256.{h,cpp}      scalar SHA-256 (open source, Stephan Brumme — see headers)
+  sha256_fast.hpp     hardware-accelerated SHA-256 (x86 SHA extensions) + fallback
   staticstring.hpp    provided helper
   random.hpp          provided helper
   passwd-utils.hpp    provided helper (used by gen/check-passwd)

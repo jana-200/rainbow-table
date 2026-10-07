@@ -63,6 +63,11 @@ int main(int argc, char* argv[])
     for (size_t i = 2; i < pos.size(); ++i)
         table_paths.push_back(pos[i]);
 
+    std::cerr << "SHA-256: "
+              << (rainbow::shani_enabled() ? "hardware-accelerated (SHA extensions)"
+                                           : "scalar (no SHA extensions on this CPU)")
+              << '\n';
+
     // ---- load tables -----------------------------------------------------
     std::cerr << "Loading " << table_paths.size() << " table(s)...\n";
     std::vector<Table> tables;
