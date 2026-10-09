@@ -69,16 +69,16 @@ It also tells you whether the **hardware-accelerated** SHA-256 is active
 
 ```bash
 ./build-tables.sh --light tables    # 4xL6 + 2xL7  (~1 night even on a modest laptop)
-./build-tables.sh --fast  tables    # 4xL6 + 4xL7  (recommended; ~1 night on a SHA-NI laptop)
+./build-tables.sh --fast  tables    # 4xL6 + 6xL7  (recommended; ~1 night on a SHA-NI laptop)
 ./build-tables.sh --full  tables    # --fast + length 8     (mostly symbolic)
 ./build-tables.sh --max   tables    # --fast + lengths 9,10 (covers the whole 6..10 range)
 ```
 
-`--fast` (8 tables, ~3.1×10¹² hashes) is the recommended profile; on the
-reference machine (hardware SHA-256, 16 threads) it builds in ~9 h and stays at
-~3.6 GB RAM / ~3.7 GB disk during the attack. If `--bench` shows a slower
-machine (scalar SHA-256 or few cores), use `--light` or lower `NTAB[7]` in the
-script so it still fits one night.
+`--fast` (10 tables, ~4.6×10¹² hashes) is the recommended profile; on the
+reference machine (hardware SHA-256, 16 threads) it builds in ~8 h and stays at
+~5.1 GB RAM / ~5.1 GB disk during the attack (under the 6 GB / 20 GB limits). If
+`--bench` shows a slower machine (scalar SHA-256 or few cores), use `--light` or
+lower `NTAB[7]` in the script so it still fits one night.
 
 This writes `tables/t<L>_<id>.rtbl`. The profiles target roughly one night on a
 multi-core laptop and stay well under the 20 GB disk / 6 GB RAM limits. Edit the

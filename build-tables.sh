@@ -11,7 +11,7 @@
 #
 #  PROFILE (default: fast):
 #     --light  4xL6 + 2xL7              -> ~1 night even on a modest laptop (~1.7e12 hashes)
-#     --fast   4xL6 + 4xL7              -> best crack rate, ~1 night on a SHA-NI laptop (~3.1e12 hashes)
+#     --fast   4xL6 + 6xL7              -> best crack rate, ~1 night on a SHA-NI laptop (~4.6e12 hashes)
 #     --full   --fast + 1xL8            -> adds a (mostly symbolic) length-8 pass
 #     --max    --fast + L8 + L9 + L10   -> attempts the whole 6..10 range
 #
@@ -67,14 +67,14 @@ mkdir -p "$OUT"
 # staying under 20 GB on disk and 6 GB in RAM.
 declare -A M T NTAB
 M[6]=6000000    ; T[6]=10000 ; NTAB[6]=4
-M[7]=60000000   ; T[7]=12000 ; NTAB[7]=4
+M[7]=60000000   ; T[7]=12000 ; NTAB[7]=6
 M[8]=150000000  ; T[8]=15000 ; NTAB[8]=0
 M[9]=200000000  ; T[9]=20000 ; NTAB[9]=0
 M[10]=200000000 ; T[10]=20000; NTAB[10]=0
 
 case "$PROFILE" in
     light) NTAB[7]=2 ;;                        # 4xL6 + 2xL7 (lighter, for slow machines)
-    fast)  ;;                                  # 4xL6 + 4xL7 (defaults above, recommended)
+    fast)  ;;                                  # 4xL6 + 6xL7 (defaults above, recommended)
     full)  NTAB[8]=1 ;;                        # + one length-8 table
     max)   NTAB[8]=1; NTAB[9]=1; NTAB[10]=1 ;; # attempt the whole range
 esac
