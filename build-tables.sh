@@ -7,7 +7,7 @@
 #
 #  Usage:
 #       ./build-tables.sh [PROFILE] [output_dir]
-#       ./build-tables.sh --bench            # just measure your SHA-256 speed
+#       ./build-tables.sh --bench            # just measure the local SHA-256 speed
 #
 #  PROFILE (default: fast):
 #     --light  4xL6 + 2xL7              -> ~1 night even on a modest laptop (~1.7e12 hashes)
@@ -15,7 +15,7 @@
 #     --full   --fast + 1xL8            -> adds a (mostly symbolic) length-8 pass
 #     --max    --fast + L8 + L9 + L10   -> attempts the whole 6..10 range
 #
-#  --fast is the recommended profile. If --bench says your machine is slow
+#  --fast is the recommended profile. If --bench reports a slow machine
 #  (scalar SHA-256, few cores), use --light, or lower NTAB[7] below.
 #
 #  IMPORTANT, read this before choosing:
@@ -28,7 +28,7 @@
 #     skewed toward short passwords -- in which case --fast is exactly right.
 #
 #  Per table: cost ~ M*T SHA-256 evaluations, size ~ M*16 bytes.
-#  Run ./build-tables.sh --bench first to size the tables to YOUR machine.
+#  Run ./build-tables.sh --bench first to size the tables to the local machine.
 # ---------------------------------------------------------------------------
 set -euo pipefail
 
@@ -82,7 +82,7 @@ esac
 LENGTHS=(6 7 8 9 10)
 
 echo "Profile: --$PROFILE     Output: $OUT"
-echo "(tip: run './build-tables.sh --bench' to size these to your machine)"
+echo "(tip: run './build-tables.sh --bench' to size these to the local machine)"
 echo
 
 for L in "${LENGTHS[@]}"; do

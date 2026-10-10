@@ -11,6 +11,21 @@ alphanumeric passwords (length 6 to 10, unsalted, single hash pass).
 | Assia CHAHID  | 000656448 |
 | Haja BOUBNAN  | 000660294 |
 
+## Quick start (Ubuntu 24.04)
+
+```bash
+./build.sh                                       # install dependencies + compile
+./build-tables.sh --fast tables                  # preprocessing: build the rainbow tables (~1 night)
+./attack hashes.txt cracked.txt tables/*.rtbl    # crack the hashes
+```
+
+* `hashes.txt` — input file: one lowercase-hex SHA-256 per line (last line blank).
+* `cracked.txt` — output file: one password per line in the same order; a hash
+  that could not be cracked becomes a line containing only `?`.
+
+The sections below detail the build, the table-generation profiles, the attack,
+and how the method works.
+
 ## What is delivered
 
 Two main programs, as required by the statement:
