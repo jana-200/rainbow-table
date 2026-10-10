@@ -172,6 +172,35 @@ paste pw.txt cracked.txt                    # compare (ignoring '?')
   the attack processes each hash on a worker thread. Both scale with cores
   (the statement notes multithreading is essentially required).
 
+## Design choice: covering lengths 6–7
+
+Building rainbow tables for every length from 6 to 10 in a single night on one
+laptop is not feasible, because the key space grows as `62^L` and explodes with
+length:
+
+| L  | 62^L (≈)   | Coverable on a laptop in one night? |
+|----|------------|-------------------------------------|
+| 6  | 5.7 × 10¹⁰ | yes, essentially fully              |
+| 7  | 3.5 × 10¹² | yes, in large part                  |
+| 8  | 2.2 × 10¹⁴ | no — would need several days        |
+| 9  | 1.3 × 10¹⁶ | no — weeks to months                |
+| 10 | 8.4 × 10¹⁷ | no — years                          |
+
+Since the cost of a rainbow table is proportional to the key space it covers,
+the available time is far better spent on the shorter lengths, where passwords
+are actually recoverable. We therefore **concentrate the tables on lengths 6 and
+7**: the `--fast` profile builds 4 tables for length 6 and 6 tables for length 7.
+Lengths 8–10 are left uncovered by default; the `--full` and `--max` profiles
+allow attempting them, but in one night they recover almost nothing while taking
+time away from lengths 6–7.
+
+A direct consequence: on a test set whose lengths are uniform over 6–10, the
+theoretical maximum any laptop can reach is about **40 %** (all of length 6 plus
+all of length 7 — the remaining 60 % being lengths 8–10). Our measurements with
+this configuration are ≈ 92 % on length 6, ≈ 70 % on length 7, and ≈ 33 % on a
+uniform 6–10 mix, consistent with that limit. A test set skewed toward shorter
+passwords is recovered at a correspondingly higher rate.
+
 ## Performance (SHA-256 acceleration)
 
 SHA-256 is where essentially all the time goes, so `src/sha256_fast.hpp`
