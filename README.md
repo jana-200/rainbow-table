@@ -5,13 +5,11 @@ alphanumeric passwords (length 6 to 10, unsalted, single hash pass).
 
 ## Group members
 
-<!-- Fill in before submitting -->
-
 | Name | Matricule |
 |------|-----------|
-| _TODO_ | _TODO_ |
-| _TODO_ | _TODO_ |
-| _TODO_ | _TODO_ |
+| Gana KAMAL    | 000572982 |
+| Assia CHAHID  | 000656448 |
+| Haja BOUBNAN  | 000660294 |
 
 ## What is delivered
 

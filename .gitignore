@@ -7,3 +7,6 @@
 /tables/
 *.rtbl
 *.o
+# test / run artifacts (password & hash files, logs) -- never part of the submission
+*.txt
+*.log
